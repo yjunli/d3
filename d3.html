@@ -1,19 +1,98 @@
 <!DOCTYPE html>
     <head>
-        <meta charset="utf-8" />
+        <meta charset="utf-8"/>
+	    <link rel='stylesheet' href='./d3v4-selectable-zoomable-force-directed-graph.css'>
     </head>
-    <div align='center' id="d3_selectable_force_directed_graph" style="width: 960px; height: 500px; margin: auto; margin-bottom: 12px">
-        <svg />
-    </div>
+    <body>
+	    <div align='center' id="d3_selectable_force_directed_graph" style="width: 960px; height: 500px; margin: auto; margin-bottom: 12px">
+	    	<svg xmlns='http://www.w3.org/2000/svg' class='svg1122'></svg>
+	    </div>
+		<button type="button" onclick="download()">导出为图片</button>
+	    <script src="https://d3js.org/d3.v4.js"></script>
+	    <script src="./d3v4-selectable-force-directed-graph.js"></script>
+	    <script src="./miserables.with-ids.js"></script>
+	    <script>
+	        var svg = d3.select('#d3_selectable_force_directed_graph1122');
+	        
+	        createV4SelectableForceDirectedGraph(svg, graph, 960, 550, 1122, 1111);
 
-    <link rel='stylesheet' href='./d3v4-selectable-zoomable-force-directed-graph.css'>
-    <script src="https://d3js.org/d3.v4.js"></script>
-    <script src="./d3v4-brush-lite.js"></script>
-    <script src="./d3v4-selectable-force-directed-graph.js"></script>
-    <script src="./miserables.with-ids.js"></script>
-    <script>
-        var svg = d3.select('#d3_selectable_force_directed_graph');
-        
-        createV4SelectableForceDirectedGraph(svg, graph);
-    </script>
+	    	function download() {
+				let svgImg = document.getElementById('d3_selectable_force_directed_graph');
+				let box = svgImg.children[0].children[0].children[1].getBoundingClientRect();
+				svgImg.children[0].setAttribute('viewBox', `0 ${box.y} ${box.width} ${box.height}`);
+
+				svgImg.children[0].children[0].children[0].setAttribute('width', `0`);
+				svgImg.children[0].children[0].children[0].setAttribute('height', `0`);
+
+			    //1.将div转成svg
+				let node = document.getElementById('d3_selectable_force_directed_graph').innerHTML;
+				node = node.replace('&nbsp;', '');
+
+			    let img = new Image();
+			    img.src = 'data:image/svg+xml;utf8,' + '<?xml version="1.0" encoding="UTF-8"?>' + node;
+
+			    //2.svg转成canvas
+			    let canvas = document.createElement('canvas');  //准备空画布
+			    canvas.width = 960;
+			    canvas.height = 550;
+			 
+			    let context = canvas.getContext('2d');  //取得画布的2d绘图上下文
+
+			    if(img.complete) { // 如果图片已经存在于浏览器缓存，直接调用回调函数
+					downCanvas.bind(this, img, context, canvas);
+	            } else {
+		            img.onload = downCanvas.bind(this, img, context, canvas);
+	            }
+
+				svgImg.children[0].setAttribute('viewBox', ` 0 0 960 550`);
+			}
+
+			function downCanvas(img, context, canvas) {
+			    context.drawImage(img, 0, 0);
+			    turnPic(canvas);				
+			}
+
+			function turnPic(canvas) {
+			    //3. 图片导出为 png 格式
+			    let type = 'png';
+			    let imgData = canvas.toDataURL(type);
+
+			    // 加工image data，替换mime type
+			    imgData = imgData.replace(fixType(type), 'image/octet-stream');
+
+			    // 下载后的图片名
+			    let filename = 'Mrjun' + (new Date()).getTime() + '.' + type;
+
+			    // download
+			    saveFile(imgData, filename);	
+			}
+
+			/**
+			 * 在本地进行文件保存
+			 * @param  {String} data     要保存到本地的图片数据
+			 * @param  {String} filename 文件名
+			 */
+			function saveFile (data, filename) {
+			    let save_link = document.createElementNS('http://www.w3.org/1999/xhtml', 'a');
+			    save_link.href = data;
+			    save_link.download = filename;
+
+			    let event = document.createEvent('MouseEvents');
+			    event.initMouseEvent('click', true, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+			    save_link.dispatchEvent(event);
+			};
+
+			/**
+			 * 获取mimeType
+			 * @param  {String} type the old mime-type
+			 * @return the new mime-type
+			 */
+			function fixType(type) {
+			    type = type.toLowerCase().replace(/jpg/i, 'jpeg');
+			    let r = type.match(/png|jpeg|bmp|gif/)[0];
+			    return 'image/' + r;
+			};
+		</script>    	
+    </body>
+
 </html>
